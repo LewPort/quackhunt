@@ -21,6 +21,9 @@ grey = (200,200,230)
 scorefont = pygame.font.SysFont("impact", 70)
 infofont = pygame.font.SysFont("impact", 20)
 
+crosshair_orig = pygame.image.load('./img/crosshair.png')
+crosshair_img = pygame.transform.rotozoom(crosshair_orig, 0, 0.4)
+
 music = False
 
 #Loading Sounds
@@ -119,10 +122,6 @@ def duckgen(n):
                       rotation_rate=0.5)
 
 
-def draw_all_ducks():
-
-    for i in duck:
-        duck[i].draw_duck()
 
 def duck_hit_detection():
     global gunshottime
@@ -148,6 +147,12 @@ def duck_hit_detection():
                 if duck[i].dead == False:
                     duck[i].deadduck()
 
+def draw_crosshair():
+    loc = pygame.mouse.get_pos()
+    game_display.blit(crosshair_img, (loc[0] - (crosshair_img.get_width() / 2), loc[1] - crosshair_img.get_height() /2))
+
+
+
 def mark_shot():
     loc = pygame.mouse.get_pos()
     while gunloaded == False:
@@ -170,6 +175,8 @@ def stopwatch():
 ########### GAME STARTS HUR ############
 
 playing = True
+
+pygame.mouse.set_visible(False)
 
 pygame.mixer.music.set_volume(0.8)
 pygame.mixer.music.play(-1)
@@ -197,7 +204,10 @@ while playing:
     if stopwatch() == duck_release_time:
         duckgen(random.randrange(1,4)) #Gener8 a ranom amount of ducks
 
-    draw_all_ducks()
+
+    for i in duck:
+        duck[i].draw_duck()
+    draw_crosshair()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
