@@ -16,10 +16,12 @@ game_display = pygame.display.set_mode((display_width, display_height), pygame.F
 pygame.display.set_caption('QUACKHUNT')
 
 red = (255,0,50)
+grey = (200,200,230)
 
 scorefont = pygame.font.SysFont("impact", 70)
+infofont = pygame.font.SysFont("impact", 20)
 
-music = True
+music = False
 
 #Loading Sounds
 pygame.mixer.music.load('./sfx/ambience.ogg')
@@ -85,8 +87,6 @@ class Duck:
         hitcount += 1
         self.y_mov -= 20
 
-        print('A HIT')
-
 
 
 
@@ -147,8 +147,6 @@ def duck_hit_detection():
             if duckarea[0] < cursorloc[0] < duckarea[1] and duckarea[2] < cursorloc[1] < duckarea[1]:
                 if duck[i].dead == False:
                     duck[i].deadduck()
-            else:
-                print('Empty click')
 
 def mark_shot():
     loc = pygame.mouse.get_pos()
@@ -218,6 +216,8 @@ while playing:
     duck_hit_detection()
     score = scorefont.render("Score: %s" % hitcount, 1, red)
     game_display.blit(score, (display_width * 0.05, display_height * 0.8))
+    info = infofont.render("Press 'esc' to Quit // Press M to get in the mood.", 1, grey)
+    game_display.blit(info, (display_width * 0.05, display_height * 0.95))
 
     if stopwatch() > 10:
         reset_stopwatch()
