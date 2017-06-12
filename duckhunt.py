@@ -95,6 +95,7 @@ class Duck:
 
 def duckgen(n):
 
+    global ducksreleased
     if debug == True:
         if duck == {}:
             duck_startle_sfx.play()
@@ -107,6 +108,7 @@ def duckgen(n):
                       y_mov= random.uniform(2, 4),
                       z_mov = random.randrange(1,3),
                       rotation_rate=0.5)
+                ducksreleased += 1
 
     else:
         if duck == {}:
@@ -120,6 +122,7 @@ def duckgen(n):
                       y_mov= random.uniform(6, 10),
                       z_mov = random.randrange(5,15),
                       rotation_rate=0.5)
+                ducksreleased += 1
 
 
 
@@ -192,8 +195,8 @@ gunshottime = time.time()
 
 duck = {}
 
+ducksreleased = 0
 hitcount = 0
-
 
 
 #Game Loop
@@ -208,6 +211,11 @@ while playing:
     for i in duck:
         duck[i].draw_duck()
     draw_crosshair()
+
+    if ducksreleased == 0:
+        score = 0
+    else:
+        score = round((hitcount / ducksreleased) * 100, 2)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -224,10 +232,10 @@ while playing:
                     music = True
 
     duck_hit_detection()
-    score = scorefont.render("Score: %s" % hitcount, 1, red)
+    score = scorefont.render("Score: %s" % score, 1, red)
     game_display.blit(score, (display_width * 0.05, display_height * 0.8))
     info = infofont.render("Press 'esc' to Quit // Press M to get in the mood.", 1, grey)
-    game_display.blit(info, (display_width * 0.05, display_height * 0.95))
+    game_display.blit(info, (display_width * 0.05, display_height * 0.92))
 
     if stopwatch() > 10:
         reset_stopwatch()
