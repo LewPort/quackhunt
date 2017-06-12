@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 debug = False
-monitor_res_width = pygame.display.Info().current_w
+monitor_res_width = pygame.display.Info().current_w #Get monitor resolution width
 
 aspect_ratio = 1.78
 display_width = 1280
@@ -22,7 +22,7 @@ scorefont = pygame.font.SysFont("impact", 70)
 infofont = pygame.font.SysFont("impact", 20)
 
 crosshair_orig = pygame.image.load('./img/crosshair.png')
-crosshair_img = pygame.transform.rotozoom(crosshair_orig, 0, 0.4)
+crosshair_img = pygame.transform.rotozoom(crosshair_orig, 0, 0.4) #Scaling the crosshair down
 
 music = False
 
@@ -39,7 +39,7 @@ def drawbackground():
     scene_bg = pygame.transform.scale(scene_bg, (display_width, display_height))
     game_display.blit(scene_bg, (0, 0))
 
-
+#Blueprint for ducks and their behaviour
 class Duck:
     duck_number = 0
 
@@ -92,56 +92,49 @@ class Duck:
 
 
 
-
+#Generates instances of the Duck class, but won't 'launch' them on to the screen yet. That's done in the gameloop.
 def duckgen(n):
-
     global ducksreleased
-    if debug == True:
-        if duck == {}:
-            duck_startle_sfx.play()
-            for i in range(n):
+    if duck == {}:
+        duck_startle_sfx.play()
+        for i in range(n):
+            if debug == True:
                 duck[i] = Duck(sprite='./img/may1.png',
-                      x_pos=random.uniform(display_width * 0.1, display_width * 0.9),
-                      y_pos=display_height * 0.8,
-                      z_pos=0.1,
-                      x_mov= random.uniform(-1, 1),
-                      y_mov= random.uniform(2, 4),
-                      z_mov = random.randrange(1,3),
-                      rotation_rate=0.5)
-                ducksreleased += 1
+                              x_pos=random.uniform(display_width * 0.1, display_width * 0.9),
+                              y_pos=display_height * 0.8,
+                              z_pos=0.1,
+                              x_mov= random.uniform(-1, 1),
+                              y_mov= random.uniform(2, 4),
+                              z_mov = random.randrange(1,3),
+                              rotation_rate=0.5)
 
-    else:
-        if duck == {}:
-            duck_startle_sfx.play()
-            for i in range(n):
+            else:
                 duck[i] = Duck(sprite='./img/may1.png',
-                      x_pos=random.uniform(display_width * 0.1, display_width * 0.9),
-                      y_pos=display_height * 0.8,
-                      z_pos=0.1,
-                      x_mov= random.uniform(-10, 10),
-                      y_mov= random.uniform(6, 10),
-                      z_mov = random.randrange(5,15),
-                      rotation_rate=0.5)
-                ducksreleased += 1
+                               x_pos=random.uniform(display_width * 0.1, display_width * 0.9),
+                               y_pos=display_height * 0.8,
+                               z_pos=0.1,
+                               x_mov=random.uniform(-10, 10),
+                               y_mov=random.uniform(6, 10),
+                               z_mov=random.randrange(5, 15),
+                               rotation_rate=0.5)
+            ducksreleased += 1
 
 
-
+#Detects if a shot has hit a duck.
 def duck_hit_detection():
     global gunshottime
     global gunloaded
     cursorloc = pygame.mouse.get_pos()
 
-    if debug == True:
+    if debug == True: #Draws a red dot where the pygame thinks the cursor is
         pygame.draw.rect(game_display, red, (cursorloc[0], cursorloc[1], 10, 10))
-        #mark_shot()
 
-    if gunshottime + 1 <= time.time():
+    if gunshottime + 1 <= time.time(): #Simulates the time it takes for a shot to reload, so you can't just spray like a machine gun.
         gunloaded = True
     else:
         gunloaded = False
 
-
-    if gunloaded == True and pygame.mouse.get_pressed()[0]:
+    if gunloaded == True and pygame.mouse.get_pressed()[0]: #Here's where the gun fires and hits the ducks
         gunshot_sfx.play()
         gunshottime = time.time()
         for i in duck:
@@ -150,36 +143,47 @@ def duck_hit_detection():
                 if duck[i].dead == False:
                     duck[i].deadduck()
 
-def draw_crosshair():
+
+def draw_crosshair(): #This is pretty self explanatory
     loc = pygame.mouse.get_pos()
     game_display.blit(crosshair_img, (loc[0] - (crosshair_img.get_width() / 2), loc[1] - crosshair_img.get_height() /2))
 
-
-
-def mark_shot():
-    loc = pygame.mouse.get_pos()
-    while gunloaded == False:
-        pygame.draw.rect(game_display, red, (loc[0], loc[1], 10, 10))
-
+def stopwatch(): #Mechanism used to mark the time at which ducks are released onto the screen.
+    elapsed = time.time() - stopwatch_start
+    elapsed = int(elapsed)
+    return elapsed
 
 def reset_stopwatch():
     global stopwatch_start
     stopwatch_start = time.time()
 
-def stopwatch():
-    elapsed = time.time() - stopwatch_start
-    elapsed = int(elapsed)
-    return elapsed
+def gametimer(): #Times how long the game has been going, which will be displayed on screen via the gameloop
+    timetogo = (int(gamestart) + (gameduration)) - time.time()
+    if timetogo < 0:
+        timetogo = 0
+    timetogo = time.strftime('%M:%S', time.gmtime(timetogo))
+    return timetogo
 
-
-
-
+def summary(score): #Offering a summary of the player's score
+    if score > 79:
+        return 'Strong & Stable'
+    elif score > 59:
+        return 'Somewhat Stable'
+    elif score > 39:
+        return 'Weak and Wobbly'
+    elif score > 19:
+        return 'No Overall Control'
+    else:
+        return 'Gove-esque'
 
 ########### GAME STARTS HUR ############
 
 playing = True
 
-pygame.mouse.set_visible(False)
+gamestart = time.time()
+gameduration = 60 * 3 #Game duration in secs
+
+pygame.mouse.set_visible(False) #Hiding the standard cursor so it can be replaced with a crosshair
 
 pygame.mixer.music.set_volume(0.8)
 pygame.mixer.music.play(-1)
@@ -189,14 +193,14 @@ if music == True:
     mozart.set_volume(0.8)
 
 stopwatch_start = time.time()
-duck_release_time = random.randrange(1,3)
+duck_release_time = 2 #initial time before the ducks are released, in seconds. This is then changed via the gameloop
 gunloaded = True
-gunshottime = time.time()
+gunshottime = time.time() #Logs the time that the gun was fired, in order to give a 1 second reload time
 
-duck = {}
+duck = {} #The ducks currently in play!
 
-ducksreleased = 0
-hitcount = 0
+ducksreleased = 0 #Total number of ducks released. Used to calculate score.
+hitcount = 0 #Ducks successfully shot
 
 
 #Game Loop
@@ -204,19 +208,23 @@ while playing:
 
     drawbackground()
 
-    if stopwatch() == duck_release_time:
-        duckgen(random.randrange(1,4)) #Gener8 a ranom amount of ducks
+    #Ducks generated here nai so they are
+    if stopwatch() == duck_release_time and time.time() < gamestart + gameduration:
+        duckgen(random.randrange(1,4))
 
-
+    #Iterates through the duck dictionary and draws them to the screen
     for i in duck:
         duck[i].draw_duck()
-    draw_crosshair()
 
+    draw_crosshair() #obv
+
+    #Players score is processed here
     if ducksreleased == 0:
         score = 0
     else:
-        score = round((hitcount / ducksreleased) * 100, 2)
+        score = round((hitcount / ducksreleased) * 100)
 
+    #Key-input handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             playing = False
@@ -232,14 +240,29 @@ while playing:
                     music = True
 
     duck_hit_detection()
-    score = scorefont.render("Score: %s" % score, 1, red)
-    game_display.blit(score, (display_width * 0.05, display_height * 0.8))
+
+    scoredisplay = scorefont.render("Score: %s%%" % score, 1, red)
+    game_display.blit(scoredisplay, (display_width * 0.05, display_height * 0.8))
+    timer = scorefont.render(gametimer(), 1, red)
+    game_display.blit(timer, (display_width * 0.05, display_height * 0.05))
     info = infofont.render("Press 'esc' to Quit // Press M to get in the mood.", 1, grey)
     game_display.blit(info, (display_width * 0.05, display_height * 0.92))
 
-    if stopwatch() > 10:
+    #Display score & Summary at the end of the game
+    if time.time() > gamestart + gameduration:
+        if gamestart + gameduration + 60 < time.time(): #period of time that the summary stays on screen (secs)
+            playing = False
+        else:
+            if music == False: #Triggers music at the end
+                music = True
+                mozart.play()
+            timesup = scorefont.render('%s%%: %s' % (score, summary(score).upper()), 1, red)
+            game_display.blit(timesup, ((display_width/2) - (timesup.get_width()/2), display_height // 2))
+
+
+    if stopwatch() > 5: #The number of seconds between ducks being generated
         reset_stopwatch()
-        duck_release_time = random.randrange(0, 5)
+        duck_release_time = random.randrange(1, 2)
         duck.clear()
 
     pygame.display.update()
