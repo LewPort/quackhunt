@@ -21,6 +21,8 @@ grey = (200,200,230)
 scorefont = pygame.font.SysFont("impact", 70)
 infofont = pygame.font.SysFont("impact", 20)
 
+scene_bg = pygame.image.load('./img/bg.jpg')
+scene_bg = pygame.transform.scale(scene_bg, (display_width, display_height))
 crosshair_orig = pygame.image.load('./img/crosshair.png')
 crosshair_img = pygame.transform.rotozoom(crosshair_orig, 0, 0.4) #Scaling the crosshair down
 
@@ -33,11 +35,6 @@ chicken_startle_sfx = pygame.mixer.Sound('./sfx/chicken.ogg')
 gunshot_sfx = pygame.mixer.Sound('./sfx/gunshot.ogg')
 mozart = pygame.mixer.Sound('./music/mozart.ogg')
 clock = pygame.time.Clock()
-
-def drawbackground():
-    scene_bg = pygame.image.load('./img/bg.jpg')
-    scene_bg = pygame.transform.scale(scene_bg, (display_width, display_height))
-    game_display.blit(scene_bg, (0, 0))
 
 #Blueprint for ducks and their behaviour
 class Duck:
@@ -60,7 +57,7 @@ class Duck:
 
     def draw_duck(self):
         self.z_pos = self.z_pos - self.z_mov
-        self.scaled_duck = pygame.transform.rotozoom(self.sprite, 0, self.z_pos)
+##        self.scaled_duck = pygame.transform.rotozoom(self.sprite, 0, self.z_pos)
         self.x_pos = self.x_pos - self.x_mov
         self.y_pos = self.y_pos - self.y_mov
         game_display.blit(self.scaled_duck, (self.x_pos, self.y_pos))
@@ -113,10 +110,10 @@ def duckgen(n):
                                x_pos=random.uniform(display_width * 0.1, display_width * 0.9),
                                y_pos=display_height * 0.8,
                                z_pos=0.1,
-                               x_mov=random.uniform(-10, 10),
-                               y_mov=random.uniform(6, 10),
-                               z_mov=random.randrange(5, 15),
-                               rotation_rate=0.5)
+                               x_mov=random.uniform(-5, 5),
+                               y_mov=random.uniform(6, 8),
+                               z_mov=random.randrange(2, 8),
+                               rotation_rate=5)
             ducksreleased += 1
 
 
@@ -129,7 +126,7 @@ def duck_hit_detection():
     if debug == True: #Draws a red dot where the pygame thinks the cursor is
         pygame.draw.rect(game_display, red, (cursorloc[0], cursorloc[1], 10, 10))
 
-    if gunshottime + 1 <= time.time(): #Simulates the time it takes for a shot to reload, so you can't just spray like a machine gun.
+    if gunshottime + gunreloadinterval <= time.time(): #Simulates the time it takes for a shot to reload, so you can't just spray like a machine gun.
         gunloaded = True
     else:
         gunloaded = False
@@ -190,12 +187,14 @@ pygame.mixer.music.play(-1)
 
 if music == True:
     mozart.play(loops=-1)
-    mozart.set_volume(0.8)
+    mozart.set_volume(1)
 
 stopwatch_start = time.time()
 duck_release_time = 2 #initial time before the ducks are released, in seconds. This is then changed via the gameloop
 gunloaded = True
+gunreloadinterval = 1 #seconds (default is 1)
 gunshottime = time.time() #Logs the time that the gun was fired, in order to give a 1 second reload time
+
 
 duck = {} #The ducks currently in play!
 
@@ -206,7 +205,7 @@ hitcount = 0 #Ducks successfully shot
 #Game Loop
 while playing:
 
-    drawbackground()
+    game_display.blit(scene_bg, (0, 0))
 
     #Ducks generated here nai so they are
     if stopwatch() == duck_release_time and time.time() < gamestart + gameduration:
@@ -219,19 +218,19 @@ while playing:
     draw_crosshair() #obv
 
     #Players score is processed here
-    if ducksreleased == 0:
-        score = 0
-    else:
+    if ducksreleased > 0:
         score = round((hitcount / ducksreleased) * 100)
+    else:
+        score = 0
 
     #Key-input handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             playing = False
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 playing = False
-            if event.key == pygame.K_m:
+            elif event.key == pygame.K_m:
                 if music == True:
                     mozart.stop()
                     music = False
@@ -247,6 +246,10 @@ while playing:
     game_display.blit(timer, (display_width * 0.05, display_height * 0.05))
     info = infofont.render("Press 'esc' to Quit // Press M to get in the mood.", 1, grey)
     game_display.blit(info, (display_width * 0.05, display_height * 0.92))
+    
+##    if debug == True:
+    fps = infofont.render(str(int(clock.get_fps())) + 'fps', 1, grey)
+    game_display.blit(fps, ((display_width/2) - (fps.get_width()/2), display_height // 2))
 
     #Display score & Summary at the end of the game
     if time.time() > gamestart + gameduration:
@@ -266,6 +269,8 @@ while playing:
         duck.clear()
 
     pygame.display.update()
-    clock.tick(30)
+
+    
+    clock.tick(40)
 
 pygame.quit()
