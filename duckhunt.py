@@ -57,7 +57,7 @@ class Duck:
 
     def draw_duck(self):
         self.z_pos = self.z_pos - self.z_mov
-##        self.scaled_duck = pygame.transform.rotozoom(self.sprite, 0, self.z_pos)
+        self.scaled_duck = pygame.transform.rotozoom(self.sprite, 0, self.z_pos)
         self.x_pos = self.x_pos - self.x_mov
         self.y_pos = self.y_pos - self.y_mov
         game_display.blit(self.scaled_duck, (self.x_pos, self.y_pos))
@@ -178,7 +178,7 @@ def summary(score): #Offering a summary of the player's score
 playing = True
 
 gamestart = time.time()
-gameduration = 60 * 3 #Game duration in secs
+gameduration = 60 * 1.5 #Game duration in secs
 
 pygame.mouse.set_visible(False) #Hiding the standard cursor so it can be replaced with a crosshair
 
@@ -247,9 +247,9 @@ while playing:
     info = infofont.render("Press 'esc' to Quit // Press M to get in the mood.", 1, grey)
     game_display.blit(info, (display_width * 0.05, display_height * 0.92))
     
-##    if debug == True:
-    fps = infofont.render(str(int(clock.get_fps())) + 'fps', 1, grey)
-    game_display.blit(fps, ((display_width/2) - (fps.get_width()/2), display_height // 2))
+    if debug == True: 
+        fps = infofont.render(str(int(clock.get_fps())) + 'fps', 1, grey)
+        game_display.blit(fps, ((display_width/2) - (fps.get_width()/2), display_height // 2))
 
     #Display score & Summary at the end of the game
     if time.time() > gamestart + gameduration:
@@ -263,14 +263,12 @@ while playing:
             game_display.blit(timesup, ((display_width/2) - (timesup.get_width()/2), display_height // 2))
 
 
-    if stopwatch() > 5: #The number of seconds between ducks being generated
+    if stopwatch() > 4: #The number of seconds between ducks being generated
         reset_stopwatch()
         duck_release_time = random.randrange(1, 2)
         duck.clear()
 
     pygame.display.update()
-
-    
-    clock.tick(40)
+    clock.tick(30)
 
 pygame.quit()
